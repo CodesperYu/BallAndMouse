@@ -7,6 +7,118 @@
 	<title>Document</title>
 </head>
 <body>
-	
+	<!-- setup game canvas -->
+	<canvas id="gameCanvas" width="800" height="600"></canvas>
+	<script>
+		//ball x-axis
+		var ballX = 75;
+		//ball y-axis
+		var ballY = 75;
+ 		//ball speed increment 
+		var ballSpeedX = 5;
+		var ballSpeedY = 7;
+
+		//create paddle
+		const PADDLE_WIDTH = 100;
+		const PADDLE_THICKNESS = 10;
+		const PADDLE_DIST_FROM_EDGE = 60;
+		var paddleX = 400;
+
+		var canvas, canvasContext;
+
+		//add mouse positioning
+		function updateMousePos(evt) {
+ 			//gets position on the page;
+			var rect = canvas.getBoundingClientRect();
+ 			//return root element (e.g. html)
+			var root = document.documentElement;
+
+ 			var mouseX = evt.clientX - rect.left - root.scrollLeft;
+			 console.log(mouseX);
+			 console.log(PADDLE_WIDTH);
+
+ 			paddleX = mouseX- PADDLE_WIDTH/2;
+		}
+		
+		//load canvas
+		window.onload = function() {
+			canvas = document.getElementById('gameCanvas');
+			canvasContext = canvas.getContext('2d');
+
+			//how often we change frames
+			var framesPerSecond = 30;
+			setInterval(updateAll, 1000/framesPerSecond);
+
+			canvas.addEventListener('mousemove', updateMousePos);
+		}
+
+		function updateAll() {
+ 			moveAll(); 
+			drawAll();
+		}
+
+		function ballReset() {
+			ballX = canvas.width/2;
+			ballY = canvas.height/2;
+		}
+
+		function moveAll() {
+			//ball speed;
+			ballX += ballSpeedX;
+			ballY += ballSpeedY;
+			//change speed if ball hits left wall;
+			if(ballX <= 0) {
+				ballSpeedX *= -1;
+			}
+			//if hits right wall;
+			if (ballX >= canvas.width) {
+				ballSpeedX *= -1;
+			}
+			//if hits the floor
+			if (ballY <= 0) {
+				ballSpeedY *= -1;
+			}
+			//if hits the ceiling
+			if (ballY >= canvas.height) {
+				ballReset();
+
+			}
+
+			var paddleTopEdgeY = canvas.height-(PADDLE_DIST_FROM_EDGE + PADDLE_THICKNESS);
+			var paddleBottomEdgeY = paddleTopEdgeY + PADDLE_THICKNESS;
+			var paddleLeftEdgeX = paddleX;
+			var paddleRightEdgeX = paddleLeftEdgeX + PADDLE_WIDTH;
+			if	( ballY > paddleTopEdgeY && // below the top of paddle
+						ballY < paddleBottomEdgeY && // above bottom of paddle
+						ballX > paddleLeftEdgeX && // right of the left side of paddle
+						ballX < paddleRightEdgeX) { // left of the left side of paddle
+				ballSpeedY *= -1;
+ 				var centerOfPaddleX = paddleX+PADDLE_WIDTH/2; 
+				var ballDistFromPaddleCenterX = ballX - centerOfPaddleX; 
+				ballSpeedX = ballDistFromPaddleCenterX * 0.35;
+			}
+		}
+
+		function drawAll() {
+			//fill in canvas
+ 			colorRect(0, 0, canvas.width, canvas.height, 'black');
+			//draw ball
+ 			colorCircle(ballX, ballY, 10 , 'white');
+			//draw paddle
+ 			colorRect(paddleX, canvas.height - PADDLE_DIST_FROM_EDGE, PADDLE_WIDTH, PADDLE_THICKNESS, 'white');
+		}
+
+		function colorRect(topLeftX, topLeftY, boxWidth, boxHeight, fillColor) {
+			canvasContext.fillStyle = fillColor;
+			canvasContext.fillRect(topLeftX, topLeftY, boxWidth, boxHeight);
+		}
+
+		function colorCircle(centerX, centerY, radius, fillColor) {
+			canvasContext.fillStyle = fillColor;
+			canvasContext.beginPath();
+			canvasContext.arc(centerX, centerY, radius, 0, Math.PI*2, true);
+			canvasContext.fill();
+		}
+	</script>
 </body>
 </html>
